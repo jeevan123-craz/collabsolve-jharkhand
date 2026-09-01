@@ -1,0 +1,8 @@
+{
+  "firestore": {
+    "databaseId": "ai-studio-collabsolvejhark-c61ebe9d-d914-43d2-8ede-fd41915ac5cc",
+    "rules": "firestore.rules",
+    "edition": "ENTERPRISE",
+    "dataAccessMode": "FIRESTORE_NATIVE"
+  }
+}

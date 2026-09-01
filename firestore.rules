@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      // Allow user creation on sign up
+      allow write: if request.auth.uid == userId;
+    }
+
+    match /challenges/{challengeId} {
+      // Anyone can read challenges
+      allow read: if true;
+      // Any authenticated user can create (citizen, admin)
+      allow create: if isAuthenticated();
+      // Allow updates (like status tracking, upvoting)
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated() && (request.auth.uid == resource.data.authorId || getUserRole() == 'admin');
+    }
+
+    match /proposals/{proposalId} {
+      // Anyone can read proposals
+      allow read: if true;
+      // Researchers/students can create proposals
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated() && (request.auth.uid == resource.data.authorId || getUserRole() == 'admin');
+    }
+  }
+}

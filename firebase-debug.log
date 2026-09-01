@@ -1,0 +1,33 @@
+[debug] [2026-09-01T12:45:44.336Z] ----------------------------------------------------------------------
+[debug] [2026-09-01T12:45:44.339Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\jeevan kishore\AppData\Local\npm-cache\_npx\7750544ccf494d8b\node_modules\firebase-tools\lib\bin\firebase.js init emulators
+[debug] [2026-09-01T12:45:44.339Z] CLI Version:   15.28.2
+[debug] [2026-09-01T12:45:44.339Z] Platform:      win32
+[debug] [2026-09-01T12:45:44.339Z] Node Version:  v22.17.0
+[debug] [2026-09-01T12:45:44.339Z] Detected Agent: antigravity
+[debug] [2026-09-01T12:45:44.339Z] Time:          Tue Sep 01 2026 18:15:44 GMT+0530 (India Standard Time)
+[debug] [2026-09-01T12:45:44.339Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-09-01T12:45:44.347Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2026-09-01T12:45:45.978Z] Object "/firestore" in "firebase.json" has unknown property: {"additionalProperty":"databaseId"}
+[debug] [2026-09-01T12:45:45.978Z] Field "/firestore" in "firebase.json" is possibly invalid: must be array
+[debug] [2026-09-01T12:45:45.978Z] Field "/firestore" in "firebase.json" is possibly invalid: must match a schema in anyOf
+[debug] [2026-09-01T12:45:45.980Z] Object "/firestore" in "firebase.json" has unknown property: {"additionalProperty":"databaseId"}
+[debug] [2026-09-01T12:45:45.980Z] Field "/firestore" in "firebase.json" is possibly invalid: must be array
+[debug] [2026-09-01T12:45:45.980Z] Field "/firestore" in "firebase.json" is possibly invalid: must match a schema in anyOf
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  C:\Users\jeevan kishore\antigravity\imported_project
+
+Before we get started, keep in mind:
+
+  * You are initializing within an existing Firebase project directory
+
+[debug] [2026-09-01T12:45:46.745Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2026-09-01T12:45:46.745Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
