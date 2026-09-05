@@ -43,12 +43,35 @@ export const onAuthStateChanged = (auth: any, callback: (user: any) => void) => 
   };
 };
 
-export const signInWithPopup = async (a?: any, b?: any) => {
-  throw { code: 'auth/unauthorized-domain', message: 'Mocked domain error to trigger fallback' };
+export const signInWithPopup = async (authObj?: any, provider?: any, customUser?: any) => {
+  const user = customUser || {
+    uid: 'google_uid_' + Math.random().toString(36).substring(2, 9),
+    displayName: 'Jeevan Kishore',
+    email: 'jeevan.kishore@gmail.com',
+    photoURL: 'https://lh3.googleusercontent.com/a/ACg8ocISZ8a9uL12=s96-c',
+    emailVerified: true,
+  };
+  currentUser = user;
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('mock_auth_user', JSON.stringify(user));
+    window.dispatchEvent(new Event('mock_auth_changed'));
+  }
+  return { user };
 };
 
 export const signInAnonymously = async (a?: any) => {
-  throw { code: 'auth/unauthorized-domain', message: 'Mocked domain error to trigger fallback' };
+  const user = {
+    uid: 'guest_' + Math.random().toString(36).substring(2, 9),
+    displayName: 'Guest Citizen',
+    email: 'guest@collabsolve.jharkhand.gov.in',
+    photoURL: null,
+  };
+  currentUser = user;
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('mock_auth_user', JSON.stringify(user));
+    window.dispatchEvent(new Event('mock_auth_changed'));
+  }
+  return { user };
 };
 
 export const signOut = async (a?: any) => {
@@ -59,7 +82,6 @@ export const signOut = async (a?: any) => {
   }
 };
 
-// Fake user login helper for AppContext
 export const setMockUser = (user: any) => {
   currentUser = user;
   if (typeof window !== 'undefined') {

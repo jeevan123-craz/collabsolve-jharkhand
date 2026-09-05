@@ -1,24 +1,69 @@
 'use client';
-
 import Link from 'next/link';
-import { useApp } from '@/lib/AppContext';
+import { Heart, Github, ExternalLink } from 'lucide-react';
 
 export default function Footer() {
-  const { t } = useApp();
-  
   return (
-    <footer className="bg-surface-container-high dark:bg-surface-dark border-t border-outline-variant w-full mt-lg">
-      <div className="flex flex-col md:flex-row justify-between items-center py-lg px-gutter max-w-container-max mx-auto font-body-md text-body-md text-on-surface dark:text-on-surface-variant">
-        <div className="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed mb-md md:mb-0">
-            CollabSolve Jharkhand
+    <footer className="border-t border-surface-variant bg-surface-container-low/50 mt-auto">
+      <div className="max-w-container-max mx-auto px-gutter py-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+          {/* Brand */}
+          <div className="md:col-span-1">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg gradient-bg flex items-center justify-center shadow-sm">
+                <span className="text-white font-bold text-lg leading-none">C</span>
+              </div>
+              <span className="font-extrabold text-lg text-on-surface">CollabSolve</span>
+            </div>
+            <p className="text-sm text-on-surface-variant leading-relaxed">
+              A digital platform to crowdsource societal challenges and facilitate collaborative problem solving across Jharkhand.
+            </p>
+          </div>
+
+          {/* Quick Links */}
+          <div>
+            <h4 className="font-bold text-on-surface mb-3 text-sm uppercase tracking-wider">Platform</h4>
+            <ul className="space-y-2">
+              <li><Link href="/citizen" className="text-sm text-on-surface-variant hover:text-primary transition-colors">Report Issue</Link></li>
+              <li><Link href="/challenges" className="text-sm text-on-surface-variant hover:text-primary transition-colors">Browse Challenges</Link></li>
+              <li><Link href="/researcher" className="text-sm text-on-surface-variant hover:text-primary transition-colors">Researcher Hub</Link></li>
+              <li><Link href="/impact" className="text-sm text-on-surface-variant hover:text-primary transition-colors">Impact Dashboard</Link></li>
+            </ul>
+          </div>
+
+          {/* AI Features */}
+          <div>
+            <h4 className="font-bold text-on-surface mb-3 text-sm uppercase tracking-wider">AI Features</h4>
+            <ul className="space-y-2">
+              <li className="text-sm text-on-surface-variant">✦ Smart Categorization</li>
+              <li className="text-sm text-on-surface-variant">✦ Duplicate Detection</li>
+              <li className="text-sm text-on-surface-variant">✦ Sentiment Analysis</li>
+              <li className="text-sm text-on-surface-variant">✦ Auto-Assignment</li>
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div>
+            <h4 className="font-bold text-on-surface mb-3 text-sm uppercase tracking-wider">Built For</h4>
+            <p className="text-sm text-on-surface-variant leading-relaxed mb-2">
+              Smart India Hackathon 2026
+            </p>
+            <p className="text-sm text-on-surface-variant leading-relaxed">
+              Problem Statement: SIH26043
+            </p>
+            <p className="text-sm text-on-surface-variant leading-relaxed mt-1">
+              Ministry of Education
+            </p>
+          </div>
         </div>
-        <div className="flex flex-wrap justify-center gap-md font-label-md text-label-md text-on-surface-variant dark:text-on-surface-variant mb-md md:mb-0">
-          <a className="hover:text-primary dark:hover:text-primary-fixed transition-colors cursor-pointer" href="#">Privacy Policy</a>
-          <a className="hover:text-primary dark:hover:text-primary-fixed transition-colors cursor-pointer" href="#">Terms of Service</a>
-          <a className="hover:text-primary dark:hover:text-primary-fixed transition-colors cursor-pointer" href="#">Contact Us</a>
-        </div>
-        <div className="font-label-sm text-label-sm text-outline">
-            {t('footer.tagline')}
+
+        <div className="border-t border-surface-variant pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-on-surface-variant flex items-center gap-1">
+            Built with <Heart className="w-3 h-3 text-error fill-error" /> for Jharkhand &middot; © 2026 CollabSolve
+          </p>
+          <p className="text-xs text-on-surface-variant">
+            Powered by Gemini AI &middot; Firebase &middot; Next.js
+          </p>
         </div>
       </div>
     </footer>

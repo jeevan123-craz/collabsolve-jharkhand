@@ -2,9 +2,14 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { UserRole, translations } from './data';
-import { auth, db, googleProvider } from '@/lib/mock-firebase';
-import { onAuthStateChanged, signInWithPopup, signOut, User, signInAnonymously } from '@/lib/mock-firebase';
-import { doc, getDoc, setDoc } from '@/lib/mock-firebase';
+import { supabase } from '@/lib/supabase';
+import { User } from '@supabase/supabase-js';
+
+// Extend the Supabase User type with displayName for compatibility with existing components
+export interface AppUser extends User {
+  displayName?: string;
+  photoURL?: string;
+}
 
 interface AppState {
   role: UserRole;
@@ -12,9 +17,10 @@ interface AppState {
   lang: 'en' | 'hi';
   setLang: (lang: 'en' | 'hi') => void;
   t: (key: string) => string;
-  user: User | null;
+  user: AppUser | null;
   loading: boolean;
-  login: () => Promise<void>;
+  login: (customUserData?: any) => Promise<void>;
+  bypassLogin: () => void;
   logout: () => Promise<void>;
 }
 
@@ -23,45 +29,84 @@ const AppContext = createContext<AppState | undefined>(undefined);
 export function AppProvider({ children }: { children: ReactNode }) {
   const [role, setRoleState] = useState<UserRole>('citizen');
   const [lang, setLangState] = useState<'en' | 'hi'>('en');
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const savedLang = localStorage.getItem('collabsolve-lang') as 'en' | 'hi';
     if (savedLang) setLangState(savedLang);
 
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser);
-      if (firebaseUser) {
-        try {
-          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-          if (userDoc.exists()) {
-            setRoleState(userDoc.data().role as UserRole);
-          } else {
-            // New user, save default role
-            const defaultRole = (localStorage.getItem('collabsolve-role') as UserRole) || 'citizen';
-            await setDoc(doc(db, 'users', firebaseUser.uid), {
-              name: firebaseUser.displayName,
-              email: firebaseUser.email,
-              role: defaultRole
-            });
-            setRoleState(defaultRole);
-          }
-        } catch (error) {
-          console.error("Error fetching user role:", error);
-        }
-      }
+    // Bypass check for dev testing without real Supabase
+    if (localStorage.getItem('collabsolve-dev-bypass') === 'true') {
+      const savedRole = (localStorage.getItem('collabsolve-role') as UserRole) || 'citizen';
+      setRoleState(savedRole);
+      setUser({
+        id: 'dev-bypass-user-123',
+        email: 'demo@collabsolve.in',
+        displayName: 'Demo User',
+        photoURL: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Demo',
+        role: savedRole,
+        app_metadata: {},
+        user_metadata: {},
+        aud: 'authenticated',
+        created_at: new Date().toISOString()
+      });
       setLoading(false);
+      return;
+    }
+
+    // Initial session fetch
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      handleUserSession(session?.user ?? null);
     });
 
-    return () => unsubscribe();
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        handleUserSession(session?.user ?? null);
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
+
+  const handleUserSession = async (supabaseUser: User | null) => {
+    if (supabaseUser) {
+      // Map supabase user metadata to AppUser structure expected by UI
+      const appUser: AppUser = {
+        ...supabaseUser,
+        displayName: supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0],
+        photoURL: supabaseUser.user_metadata?.avatar_url,
+      };
+      setUser(appUser);
+      
+      // Fetch role from public.users table
+      const { data, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', supabaseUser.id)
+        .single();
+        
+      if (!error && data?.role) {
+        setRoleState(data.role as UserRole);
+      } else {
+        // If row doesn't exist yet (e.g. trigger delay), use default
+        const defaultRole = (localStorage.getItem('collabsolve-role') as UserRole) || 'citizen';
+        setRoleState(defaultRole);
+      }
+    } else {
+      setUser(null);
+    }
+    setLoading(false);
+  };
 
   const setRole = async (r: UserRole) => {
     setRoleState(r);
     localStorage.setItem('collabsolve-role', r);
     if (user) {
-      await setDoc(doc(db, 'users', user.uid), { role: r }, { merge: true });
+      await supabase.from('users').update({ role: r }).eq('id', user.id);
     }
   };
 
@@ -70,39 +115,47 @@ export function AppProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('collabsolve-lang', l);
   };
 
-  const login = async () => {
+  const login = async (customUserData?: any) => {
     try {
-      await signInWithPopup(auth, googleProvider);
-    } catch (error: any) {
-      console.error("Google Login failed:", error);
-      if (error.code === 'auth/unauthorized-domain') {
-        console.log("Domain unauthorized for Google Auth. Attempting anonymous login fallback...");
-        try {
-          await signInAnonymously(auth);
-          alert("Logged in as Anonymous Guest due to domain restrictions.");
-        } catch (anonErr: any) {
-          console.error("Anonymous login also failed:", anonErr);
-          if (confirm("Firebase Auth is blocked on localhost. Do you want to use a Mock User for local testing? (Note: You must set Firestore Rules to 'allow read, write: if true;' for this to work!)")) {
-            const mockUser = {
-              uid: 'local-dev-mock-uid',
-              displayName: 'Local Dev User',
-              email: 'dev@localhost',
-              photoURL: 'https://ui-avatars.com/api/?name=Local+Dev',
-            } as User;
-            setUser(mockUser);
-            setRoleState('citizen'); // Set default role
+      // Supabase OAuth redirect
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/onboarding` : undefined,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
           }
         }
-      } else {
-        alert("Login failed: " + error.message);
-      }
+      });
+      if (error) throw error;
+    } catch (error: any) {
+      console.error("Supabase Login error:", error);
     }
+  };
+
+  const bypassLogin = () => {
+    // DEV MODE ONLY: Simulate a logged in user without hitting Supabase
+    const fakeUser: AppUser = {
+      id: 'dev-bypass-user-123',
+      email: 'demo@collabsolve.in',
+      displayName: 'Demo User',
+      photoURL: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Demo',
+      role: role,
+      app_metadata: {},
+      user_metadata: {},
+      aud: 'authenticated',
+      created_at: new Date().toISOString()
+    };
+    setUser(fakeUser);
+    localStorage.setItem('collabsolve-dev-bypass', 'true');
   };
 
   const logout = async () => {
     try {
-      await signOut(auth);
-      setRoleState('citizen'); // Reset to default on logout
+      localStorage.removeItem('collabsolve-dev-bypass');
+      await supabase.auth.signOut();
+      setRoleState('citizen'); 
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -111,7 +164,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const t = (key: string) => translations[lang]?.[key] || translations['en']?.[key] || key;
 
   return (
-    <AppContext.Provider value={{ role, setRole, lang, setLang, t, user, loading, login, logout }}>
+    <AppContext.Provider value={{ role, setRole, lang, setLang, t, user, loading, login, bypassLogin, logout }}>
       {children}
     </AppContext.Provider>
   );

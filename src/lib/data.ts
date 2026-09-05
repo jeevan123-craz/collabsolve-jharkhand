@@ -18,6 +18,14 @@ export interface Challenge {
   comments: number;
   requiredSkills: string[];
   aiMatchedDepartments: string[];
+  aiCategories?: string[];
+  aiSkills?: string[];
+  aiInstitutions?: string[];
+  photoBase64?: string | null;
+  commentsList?: { id: string, text: string, authorName: string, authorRole: string, createdAt: any }[];
+  attachments?: { id: string, name: string, type: 'image' | 'video' | 'document', url: string }[];
+  authorId?: string;
+  createdAt?: any;
 }
 
 export interface Proposal {
@@ -279,6 +287,12 @@ export const translations: Record<string, Record<string, string>> = {
     'nav.researcher': 'Researcher Hub',
     'nav.industry': 'Industry Portal',
     'nav.signin': 'Sign In',
+    'nav.leaderboard': 'Leaderboard',
+    'nav.impact': 'Impact',
+    'role.citizen': '👤 Citizen',
+    'role.admin': '🛡️ Govt Admin',
+    'role.researcher': '🎓 Researcher',
+    'role.industry': '🏭 Industry',
     'hero.title': "Jharkhand's Problems. India's Brightest Minds. Together.",
     'hero.subtitle': 'A collaborative platform connecting citizens, universities, and industries to solve real-world societal challenges across Jharkhand.',
     'hero.cta1': 'Report a Challenge',
@@ -298,6 +312,14 @@ export const translations: Record<string, Record<string, string>> = {
     'how.step4desc': 'Industry partners fund, mentor, and help deploy solutions on the ground.',
     'heatmap.title': 'Challenge Hotspots Across Jharkhand',
     'footer.tagline': 'Built for Smart India Hackathon 2026 — Problem Statement SIH26043',
+    'researcher.hub': 'Researcher Hub',
+    'researcher.desc': 'Explore civic challenges, submit research-backed proposals, and climb the impact leaderboard.',
+    'researcher.explore': 'Explore',
+    'researcher.myproposals': 'My Proposals',
+    'researcher.leaderboard': 'Leaderboard',
+    'researcher.search': 'Search challenges by keyword...',
+    'researcher.allcategories': 'All Categories',
+    'researcher.available': 'challenges available for proposals',
   },
   hi: {
     'nav.home': 'होम',
@@ -307,6 +329,12 @@ export const translations: Record<string, Record<string, string>> = {
     'nav.researcher': 'शोधकर्ता हब',
     'nav.industry': 'उद्योग पोर्टल',
     'nav.signin': 'साइन इन',
+    'nav.leaderboard': 'लीडरबोर्ड',
+    'nav.impact': 'प्रभाव',
+    'role.citizen': '👤 नागरिक',
+    'role.admin': '🛡️ सरकारी एडमिन',
+    'role.researcher': '🎓 शोधकर्ता',
+    'role.industry': '🏭 उद्योग',
     'hero.title': 'झारखंड की समस्याएँ। भारत के प्रतिभाशाली दिमाग। एक साथ।',
     'hero.subtitle': 'नागरिकों, विश्वविद्यालयों और उद्योगों को जोड़ने वाला एक सहयोगी मंच जो झारखंड की वास्तविक सामाजिक चुनौतियों को हल करता है।',
     'hero.cta1': 'चुनौती दर्ज करें',
@@ -326,5 +354,13 @@ export const translations: Record<string, Record<string, string>> = {
     'how.step4desc': 'उद्योग भागीदार समाधानों को वित्तपोषित करते हैं, मार्गदर्शन करते हैं और जमीन पर तैनात करने में मदद करते हैं।',
     'heatmap.title': 'झारखंड भर में चुनौती हॉटस्पॉट',
     'footer.tagline': 'स्मार्ट इंडिया हैकथॉन 2026 के लिए निर्मित — समस्या कथन SIH26043',
+    'researcher.hub': 'शोधकर्ता हब',
+    'researcher.desc': 'नागरिक चुनौतियों का अन्वेषण करें, शोध-समर्थित प्रस्ताव प्रस्तुत करें और प्रभाव लीडरबोर्ड पर चढ़ें।',
+    'researcher.explore': 'अन्वेषण करें',
+    'researcher.myproposals': 'मेरे प्रस्ताव',
+    'researcher.leaderboard': 'लीडरबोर्ड',
+    'researcher.search': 'कीवर्ड द्वारा चुनौतियाँ खोजें...',
+    'researcher.allcategories': 'सभी श्रेणियाँ',
+    'researcher.available': 'प्रस्तावों के लिए उपलब्ध चुनौतियाँ',
   },
 };

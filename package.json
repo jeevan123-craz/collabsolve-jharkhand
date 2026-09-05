@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@google/genai": "^2.20.0",
+    "@supabase/supabase-js": "^2.114.0",
     "firebase": "^12.18.0",
     "firebase-admin": "^14.3.0",
     "lucide-react": "^0.470.0",
