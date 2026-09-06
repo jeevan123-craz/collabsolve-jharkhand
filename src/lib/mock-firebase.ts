@@ -10,10 +10,65 @@ export const db = { isMockDb: true };
 export const auth = { isMockAuth: true };
 export const googleProvider = {};
 
+const INITIAL_SEED = {
+  challenges: {
+    "chal_1": {
+      id: "chal_1",
+      title: "Broken Water Pipeline in Main Market",
+      description: "The main water pipeline near the central market is leaking continuously. Thousands of liters of clean water are being wasted every day.",
+      category: "Water Supply",
+      district: "Ranchi",
+      location: { lat: 23.3441, lng: 85.3096 },
+      status: "Reported",
+      authorId: "user_1",
+      authorName: "Ramesh Kumar",
+      upvotes: 42,
+      createdAt: Date.now() - 86400000,
+      urgency: "High"
+    },
+    "chal_2": {
+      id: "chal_2",
+      title: "Primary Healthcare Center lacking basic medicines",
+      description: "The PHC in our block hasn't received paracetamol or basic antibiotics for the past 3 weeks. Villagers have to travel 30km to the district hospital.",
+      category: "Healthcare",
+      district: "Dhanbad",
+      location: { lat: 23.7915, lng: 86.4304 },
+      status: "Open for Proposals",
+      authorId: "user_2",
+      authorName: "Sunita Devi",
+      upvotes: 120,
+      createdAt: Date.now() - 172800000,
+      urgency: "Critical"
+    },
+    "chal_3": {
+      id: "chal_3",
+      title: "Streetlights dead near highway crossing",
+      description: "Streetlights on the main connecting road are non-functional for a month, causing accidents at night.",
+      category: "Infrastructure",
+      district: "Jamshedpur",
+      location: { lat: 22.8046, lng: 86.2029 },
+      status: "Reported",
+      authorId: "user_3",
+      authorName: "Amit Singh",
+      upvotes: 15,
+      createdAt: Date.now() - 3600000,
+      urgency: "Medium"
+    }
+  }
+};
+
 const getDb = () => {
   if (typeof window === 'undefined') return {};
-  const data = localStorage.getItem('mock_db');
-  return data ? JSON.parse(data) : {};
+  const dataStr = localStorage.getItem('mock_db');
+  let data = dataStr ? JSON.parse(dataStr) : {};
+  
+  // Force seed if there are no challenges currently in the database
+  if (!data.challenges || Object.keys(data.challenges).length === 0) {
+    data = { ...data, challenges: INITIAL_SEED.challenges };
+    localStorage.setItem('mock_db', JSON.stringify(data));
+  }
+  
+  return data;
 };
 
 const saveDb = (data: any) => {

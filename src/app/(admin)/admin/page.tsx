@@ -77,40 +77,7 @@ export default function Page() {
     }
   };
 
-  useEffect(() => {
-    // Initial fetch
-    const fetchData = async () => {
-      const [{ data: cData }, { data: pData }] = await Promise.all([
-        supabase.from('challenges').select('*'),
-        supabase.from('proposals').select('*')
-      ]);
-      if (cData) setChallenges(cData);
-      if (pData) setProposals(pData);
-    };
-    fetchData();
-
-    // Realtime subscriptions
-    const channel = supabase.channel('admin_kanban')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'challenges' }, (payload) => {
-        setChallenges(prev => {
-          if (payload.eventType === 'INSERT') return [...prev, payload.new];
-          if (payload.eventType === 'UPDATE') return prev.map(c => c.id === payload.new.id ? payload.new : c);
-          if (payload.eventType === 'DELETE') return prev.filter(c => c.id !== payload.old.id);
-          return prev;
-        });
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'proposals' }, (payload) => {
-        setProposals(prev => {
-          if (payload.eventType === 'INSERT') return [...prev, payload.new];
-          if (payload.eventType === 'UPDATE') return prev.map(p => p.id === payload.new.id ? payload.new : p);
-          if (payload.eventType === 'DELETE') return prev.filter(p => p.id !== payload.old.id);
-          return prev;
-        });
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
-  }, []);
+  useEffect(() => { const qC = query(collection(db, "challenges")); const unsubC = onSnapshot(qC, (snap: any) => { setChallenges(snap.docs.map((d: any) => d.data())); }); const qP = query(collection(db, "proposals")); const unsubP = onSnapshot(qP, (snap: any) => { setProposals(snap.docs.map((d: any) => d.data())); }); return () => { if(typeof unsubC === "function") unsubC(); if(typeof unsubP === "function") unsubP(); }; }, []);
 
   const handleChat = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,6 +103,35 @@ export default function Page() {
   };
 
   const [isNudging, setIsNudging] = useState<string | null>(null);
+  const [isCalling, setIsCalling] = useState<string | null>(null);
+
+  const handleCallCitizen = async (challenge: any) => {
+    setIsCalling(challenge.id);
+    try {
+      const type = challenge.status === 'Resolved' ? 'completion' : 'update_request';
+      const res = await fetch('/api/twilio/call', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          challengeId: challenge.id,
+          challengeTitle: challenge.title,
+          district: challenge.district,
+          phoneNumber: '+919442983888', // Using the verified Indian number from the screenshot
+          type 
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(data.message);
+      } else {
+        alert(`Error: ${data.error}`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error triggering Twilio Call.');
+    }
+    setIsCalling(null);
+  };
 
   const handleNudge = async (challenge: any) => {
     setIsNudging(challenge.id);
@@ -379,15 +375,26 @@ export default function Page() {
                           <MapPin className="w-3.5 h-3.5" />
                           <span>{challenge.district}</span>
                         </div>
-                        <button 
-                          onClick={() => handleNudge(challenge)}
-                          disabled={isNudging === challenge.id}
-                          className="bg-secondary/10 text-secondary hover:bg-secondary/20 px-2 py-1 rounded-md text-xs font-bold flex items-center gap-1 transition-colors disabled:opacity-50"
-                          title="Smart Nudge Industry Partners"
-                        >
-                          <Bot className="w-3 h-3" />
-                          {isNudging === challenge.id ? 'Nudging...' : 'Smart Nudge'}
-                        </button>
+                        <div className="flex gap-2">
+                          <button 
+                            onClick={() => handleNudge(challenge)}
+                            disabled={isNudging === challenge.id}
+                            className="bg-secondary/10 text-secondary hover:bg-secondary/20 px-2 py-1 rounded-md text-xs font-bold flex items-center gap-1 transition-colors disabled:opacity-50"
+                            title="Smart Nudge Industry Partners"
+                          >
+                            <Bot className="w-3 h-3" />
+                            {isNudging === challenge.id ? 'Nudging...' : 'Smart Nudge'}
+                          </button>
+                          <button 
+                            onClick={() => handleCallCitizen(challenge)}
+                            disabled={isCalling === challenge.id}
+                            className="bg-primary/10 text-primary hover:bg-primary/20 px-2 py-1 rounded-md text-xs font-bold flex items-center gap-1 transition-colors disabled:opacity-50"
+                            title="Call Citizen via Twilio AI"
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>call</span>
+                            {isCalling === challenge.id ? 'Calling...' : 'AI Call'}
+                          </button>
+                        </div>
                       </div>
                       {challenge.aiCategories && challenge.aiCategories.length > 0 && (
                         <div className="mt-3 pt-3 border-t border-outline-variant/30 flex items-center gap-2 bg-primary/5 -mx-4 -mb-4 px-4 py-3 rounded-b-xl">
@@ -649,3 +656,4 @@ export default function Page() {
     </div>
   );
 }
+
